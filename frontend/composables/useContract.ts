@@ -1,6 +1,5 @@
 import {
   useAccount,
-  useContractRead,
   useNetwork,
   usePublicClient,
   useSwitchNetwork,
@@ -9,6 +8,7 @@ import {
 import { getContract } from 'viem';
 import { mainnet, sepolia } from 'use-wagmi/chains';
 import { abi } from '~/lib/config/abi';
+import { Environments } from '~/lib/values/general.values';
 
 export default function useContract() {
   const message = useMessage();
@@ -17,10 +17,10 @@ export default function useContract() {
   const { address } = useAccount();
   const { switchNetwork } = useSwitchNetwork();
   const publicClient = usePublicClient();
-  const { data: walletClient } = useWalletClient();
+  const { data: walletClient, refetch } = useWalletClient();
 
   const contractAddress = config.public.CONTRACT_ADDRESS as `0x${string}`;
-  const usedChain = config.public.env === 'prod' ? mainnet : sepolia;
+  const usedChain = config.public.ENV === Environments.prod ? mainnet : sepolia;
 
   const contract = ref();
 
@@ -47,7 +47,11 @@ export default function useContract() {
   /**
    * Helper for initializing specific contract
    */
-  function initContract() {
+  async function initContract() {
+    if (!walletClient.value) {
+      await refetch();
+      await sleep(200);
+    }
     if (!chain || !chain.value || chain?.value.id !== usedChain.id) {
       switchNetwork(usedChain.id);
     }

@@ -1,8 +1,16 @@
 <script lang="ts" setup>
+import { Environments } from '~/lib/values/general.values';
+
 defineProps({
   metadata: { type: Object as PropType<Metadata>, default: null },
   txHash: { type: String, default: null },
 });
+
+const config = useRuntimeConfig();
+const scanUrl =
+  config.public.ENV === Environments.prod
+    ? 'https://etherscan.io/tx/'
+    : 'https://sepolia.etherscan.io/tx/';
 </script>
 
 <template>
@@ -22,7 +30,7 @@ defineProps({
         <p class="mb-4">{{ metadata.description }}</p>
         <a
           v-if="txHash"
-          :href="`https://sepolia.etherscan.io/tx/${txHash}`"
+          :href="`${scanUrl}${txHash}`"
           class="text-yellow hover:underline"
           target="_blank"
         >
